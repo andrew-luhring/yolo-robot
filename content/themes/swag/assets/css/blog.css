@@ -3,7 +3,6 @@
   src: url("../fonts/monof55.woff");
   src: url("../fonts/monofur.ttf");
 }
-
 html {
   font-size: 62.5%;
 }
@@ -263,3 +262,5 @@ body {
   -o-transition-property: all;
   transition-property: all;
 }
+
+/*# sourceMappingURL=blog.css.map */

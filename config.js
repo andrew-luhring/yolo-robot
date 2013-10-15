@@ -30,7 +30,7 @@ config = {
             connection: {
                 filename: path.join(__dirname, '/content/data/ghost-dev.db')
             },
-            debug: true
+            debug: false
         },
         server: {
             // Host to be passed to node's `net.Server#listen()`
@@ -51,7 +51,7 @@ config = {
             connection: {
                 filename: path.join(__dirname, '/content/data/ghost.db')
             },
-            debug: true
+            debug: false
         },
         server: {
             // Host to be passed to node's `net.Server#listen()`

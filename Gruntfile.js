@@ -60,12 +60,16 @@ var path           = require('path'),
             // Watch files and livereload in the browser during development
             watch: {
                 handlebars: {
-                    files: ['core/client/tpl/**/*.hbs'],
+                    files: ['core/client/tpl/**/*.hbs', 'content/themes/swag/**/*.hbs', 'content/themes/swag/*.hbs'],
                     tasks: ['handlebars']
                 },
                 sass: {
                     files: ['<%= paths.adminAssets %>/sass/**/*'],
                     tasks: ['sass:admin']
+                },
+                scss: {
+                    files: ['content/themes/swag/assets/sass/*.scss', 'content/themes/swag/assets/sass/partials/*.scss'],
+                    tasks: ['sass:dist']
                 },
                 concat: {
                     files: [
@@ -81,6 +85,7 @@ var path           = require('path'),
                     files: [
                         // Theme CSS
                         'content/themes/*/css/*.css',
+                        'content/themes/*/assets/css/*.css',
                         // Theme JS
                         'content/themes/*/js/*.js',
                         // Admin CSS
@@ -168,7 +173,10 @@ var path           = require('path'),
                         unparam: true
                     },
                     files: {
-                        src: 'core/client/**/*.js'
+                        src: [
+                            'core/client/**/*.js',
+                            'content/themes/swag/assets/js/*.js'
+                        ]
                     },
                     exclude: [
 			            'core/client/assets/**/*.js',
@@ -245,8 +253,20 @@ var path           = require('path'),
                     files: {
                         '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
                     }
+                },
+                dist: {
+                    files: {
+                        'content/themes/swag/assets/css/blog.css': 'content/themes/swag/assets/sass/blog.scss'
+                    },
+                    options: {
+                        style: 'expanded',
+                        scss: 'true',
+                        sourcemap: 'true',
+                        quiet: 'true'
+                    }
                 }
             },
+
 
             shell: {
                 bourbon: {
@@ -868,4 +888,13 @@ var path           = require('path'),
         grunt.registerTask('default', ['sass:admin', 'handlebars', 'concat']);
     };
 
+//    myGrunts = function(grunt){
+//        scss: {
+//            files: ['content/themes/swag/assets/sass/*.scss', 'content/themes/swag/assets/sass/**/*.scss' ]
+//
+//        }
+//    }
+
 module.exports = configureGrunt;
+
+
