@@ -44,6 +44,7 @@ var path           = require('path'),
             // Common paths to be used by tasks
             paths: {
                 adminAssets: './core/client/assets',
+                swagAssets: './content/themes/swag/assets',
                 build: buildDirectory,
                 nightlyBuild: path.join(buildDirectory, 'nightly'),
                 weeklyBuild: path.join(buildDirectory, 'weekly'),
@@ -68,7 +69,7 @@ var path           = require('path'),
                     tasks: ['sass:admin']
                 },
                 scss: {
-                    files: ['content/themes/swag/assets/sass/*.scss', 'content/themes/swag/assets/sass/partials/*.scss'],
+                    files: ['<%= paths.swagAssets %>/sass/**/*'],
                     tasks: ['sass:dist']
                 },
                 concat: {
@@ -84,10 +85,9 @@ var path           = require('path'),
                 livereload: {
                     files: [
                         // Theme CSS
-                        'content/themes/*/css/*.css',
-                        'content/themes/*/assets/css/*.css',
+                        '<%= paths.swagAssets %>/css/*.css',
                         // Theme JS
-                        'content/themes/*/js/*.js',
+                        '<%= paths.swagAssets %>/js/*.js',
                         // Admin CSS
                         '<%= paths.adminAssets %>/css/*.css',
                         // Admin JS
@@ -125,15 +125,6 @@ var path           = require('path'),
                     }
                 }
             },
-
-            // Open the site in a browser
-            open: {
-                server: {
-                    // TODO: Load this port from config?
-                    path: 'http://127.0.0.1:5001'
-                }
-            },
-
             // JSLint all the things!
             jslint: {
                 server: {
@@ -860,7 +851,6 @@ var path           = require('path'),
         grunt.registerTask('dev', [
             'default',
             'express:dev',
-            'open',
             'watch'
         ]);
 
