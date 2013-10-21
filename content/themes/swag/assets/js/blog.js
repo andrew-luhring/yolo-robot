@@ -1,3 +1,27 @@
+//TODO style menu, have ajax request return and store categories until button click. button click insert and resize images.
+//console.log(Backbone.Router);
+//var AppRouter = Backbone.Router.extend({
+    //routes: {
+
+        //"worktypes/:category" : "worktype"
+    //},
+    //worktype: function(category){
+      //  var selector = "'#" + category + "'";
+
+
+
+      //  $(selector).css({
+      //     "border": "2px solid blue"
+        //});
+    //}
+//});
+//var app = new AppRouter();
+
+
+
+
+
+(function ($) {
 var obj = {},
     workTypes = [],
     ref = [],
@@ -80,7 +104,7 @@ jQuery(document).ready(function () {
         didResize,
         win = getWindowDimensions(),
         current = win;
-
+    //Backbone.history.start();
 
 
     fullWindowResize("#site-head, .post", win, 1000);
@@ -137,3 +161,4 @@ $.getJSON("/assets/js/websites.JSON", function (data) {
 });
 
 
+}(jQuery));

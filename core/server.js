@@ -16,6 +16,8 @@ var express     = require('express'),
     helpers     = require('./server/helpers'),
     middleware  = require('./server/middleware'),
     packageInfo = require('../package.json'),
+    //Andrew Andy Andeqoo Andwee
+    category = require('../content/themes/swag/assets/js/websites.json'),
 
 // Variables
     loading = when.defer(),
@@ -362,6 +364,10 @@ when(ghost.init()).then(function () {
     server.get('/:slug/', frontend.single);
     server.get('/', frontend.homepage);
 
+        //TODO: Andrew Andy Andwee custom function.
+    server.get('/worktypes', function(req, resp){
+       res.json(category)
+    });
     // Are we using sockets? Custom socket or the default?
     function getSocket() {
         if (ghost.config().server.hasOwnProperty('socket')) {

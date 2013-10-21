@@ -1,25 +1,32 @@
 {{!< default}}
-<nav id="main_nav" class="default_nav">
+<nav id="main_nav" class="default_nav" xmlns="http://www.w3.org/1999/html">
     <ul>
-        <li id="websites" class="workTypes">
-            <a>
-                Websites
-            </a>
-        </li>
-        <li id="code" class="workTypes">
-            <a>
-                Code
-            </a>
-        </li>
-        <li id="experiments" class="workTypes">
-            <a>
-                Experiments
-            </a>
-        </li>
-        <li id="designs" class="workTypes">
-            <a>
-                Designs
-            </a>
-        </li>
+        <div id="thug" class="life">
+            <li id="websites" class="workTypes">
+                <a href="#/websites">
+                    Websites
+                </a>
+            </li>
+            <li id="designs" class="workTypes">
+                <a href="#/designs">
+                    Designs
+                </a>
+            </li>
+        </div>
+        <noscript>
+                <div class="workTypes"><p>Fun Fact: you don't need javascript to make accordions.</p></div>
+        </noscript>
+        <div id="nerd" class="life">
+            <li id="code" class="workTypes">
+                <a href="#/code">
+                    Code
+                </a>
+            </li>
+            <li id="experiments" class="workTypes">
+                <a href="#/experiments">
+                    Experiments
+                </a>
+            </li>
+        </div>
     </ul>
 </nav>

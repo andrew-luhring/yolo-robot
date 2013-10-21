@@ -7,32 +7,14 @@ var path           = require('path'),
     spawn          = require("child_process").spawn,
     buildDirectory = path.resolve(process.cwd(), '.build'),
     distDirectory  = path.resolve(process.cwd(), '.dist'),
-    configLoader   = require('./core/config-loader.js'),
-
     buildGlob = [
         '**',
-        '!docs/**',
-        '!_site/**',
-        '!content/images/**',
-        'content/images/README.md',
-        '!content/themes/**',
-        'content/themes/casper/**',
-        '!content/plugins/**',
-        'content/plugins/README.md',
         '!node_modules/**',
-        '!core/test/**',
-        '!core/client/assets/sass/**',
         '!**/*.db*',
         '!*.db*',
         '!.sass*',
-        '!.af*',
         '!.git*',
-        '!.groc*',
-        '!*.iml',
-        '!config.js',
-        '!CONTRIBUTING.md',
-        '!SECURITY.md',
-        '!.travis.yml'
+        '!.scss*'
     ],
 
     configureGrunt = function (grunt) {
@@ -43,17 +25,12 @@ var path           = require('path'),
         var cfg = {
             // Common paths to be used by tasks
             paths: {
-                adminAssets: './core/client/assets',
                 swagAssets: './content/themes/swag/assets',
+                swagFiles: './content/themes/swag',
                 build: buildDirectory,
-                nightlyBuild: path.join(buildDirectory, 'nightly'),
-                weeklyBuild: path.join(buildDirectory, 'weekly'),
                 buildBuild: path.join(buildDirectory, 'build'),
                 dist: distDirectory,
-                nightlyDist: path.join(distDirectory, 'nightly'),
-                weeklyDist: path.join(distDirectory, 'weekly'),
                 buildDist: path.join(distDirectory, 'build'),
-                releaseDist: path.join(distDirectory, 'release')
             },
             buildType: 'Build',
             pkg: grunt.file.readJSON('package.json'),
@@ -61,26 +38,12 @@ var path           = require('path'),
             // Watch files and livereload in the browser during development
             watch: {
                 handlebars: {
-                    files: ['core/client/tpl/**/*.hbs', 'content/themes/swag/**/*.hbs', 'content/themes/swag/*.hbs'],
+                    files: [ '< %= paths.swagFiles % >/*.hbs', '< %= paths.swagFiles % >/partials/*.hbs'],
                     tasks: ['handlebars']
                 },
-                sass: {
-                    files: ['<%= paths.adminAssets %>/sass/**/*'],
-                    tasks: ['sass:admin']
-                },
                 scss: {
-                    files: ['<%= paths.swagAssets %>/sass/**/*'],
+                    files: ['<%= paths.swagAssets %>/sass/**/*', '<%= paths.swagAssets %>/sass/*'],
                     tasks: ['sass:dist']
-                },
-                concat: {
-                    files: [
-                        'core/client/*.js',
-                        'core/client/helpers/*.js',
-                        'core/client/models/*.js',
-                        'core/client/tpl/*.js',
-                        'core/client/views/*.js'
-                    ],
-                    tasks: ['concat']
                 },
                 livereload: {
                     files: [
@@ -89,9 +52,7 @@ var path           = require('path'),
                         // Theme JS
                         '<%= paths.swagAssets %>/js/*.js',
                         // Admin CSS
-                        '<%= paths.adminAssets %>/css/*.css',
-                        // Admin JS
-                        'core/built/scripts/*.js'
+                        '<%= paths.swagAssets %>/sass/*.css'
                     ],
                     options: {
                         livereload: true
@@ -99,8 +60,8 @@ var path           = require('path'),
                 },
                 express: {
                     // Restart any time client or server js files change
-                    files:  ['core/server/**/*.js'],
-                    tasks:  ['express:dev'],
+                    files: ['core/server/**/*.js'],
+                    tasks: ['express:dev'],
                     options: {
                         //Without this option specified express won't be reloaded
                         nospawn: true
@@ -116,12 +77,13 @@ var path           = require('path'),
 
                 dev: {
                     options: {
-                        //output: "Express server listening on address:.*$"
+                        //output: "swag Express server listening on address:.*$"
                     }
                 },
                 test: {
                     options: {
-                        node_env: 'testing'
+                        //node_env: 'testing'
+                        node_env: 'development'
                     }
                 }
             },
@@ -145,8 +107,7 @@ var path           = require('path'),
                     files: {
                         src: [
                             '*.js',
-                            'core/*.js',
-                            'core/server/**/*.js'
+                            '**/*.js'
                         ]
                     }
                 },
@@ -161,93 +122,25 @@ var path           = require('path'),
                         // allow to do statements
                         todo: true,
                          // allow unused parameters
-                        unparam: true
-                    },
-                    files: {
-                        src: [
-                            'core/client/**/*.js',
-                            'content/themes/swag/assets/js/*.js'
-                        ]
-                    },
-                    exclude: [
-			            'core/client/assets/**/*.js',
-                        'core/client/tpl/**/*.js'
-                    ]
-                },
-                shared: {
-                    directives: {
-                        // node environment
-                        node: true,
-                        // browser environment
-                        browser: false,
-                        // allow dangling underscores in var names
-                        nomen: true,
-                        // allow to do statements
-                        todo: true,
-                        // allow unused parameters
                         unparam: true,
-                        // don't require use strict pragma
+                        //no use strict.
                         sloppy: true
                     },
                     files: {
                         src: [
-                            'core/shared/**/*.js'
+                            '<%= paths.swagAssets %>/js/*.js'
                         ]
                     },
                     exclude: [
-                        'core/shared/vendor/**/*.js'
+			            '<%= paths.swagAssets %>/js/lib/*.js'
                     ]
                 }
             },
-
-            mochacli: {
-                options: {
-                    ui: 'bdd',
-                    reporter: 'spec'
-                },
-
-                all: {
-                    src: ['core/test/unit/**/*_spec.js']
-                },
-
-                api: {
-                    src: ['core/test/unit/**/api*_spec.js']
-                },
-
-                client: {
-                    src: ['core/test/unit/**/client*_spec.js']
-                },
-
-                server: {
-                    src: ['core/test/unit/**/server*_spec.js']
-                },
-
-                shared: {
-                    src: ['core/test/unit/**/shared*_spec.js']
-                },
-
-                perm: {
-                    src: ['core/test/unit/**/permissions_spec.js']
-                },
-
-                migrate: {
-                    src: [
-                        'core/test/unit/**/export_spec.js',
-                        'core/test/unit/**/import_spec.js'
-                    ]
-                }
-            },
-
             // Compile all the SASS!
             sass: {
-                admin: {
-                    files: {
-                        '<%= paths.adminAssets %>/css/screen.css': '<%= paths.adminAssets %>/sass/screen.scss'
-                    }
-                },
                 dist: {
                     files: {
-                        'content/themes/swag/assets/css/blog.css': 'content/themes/swag/assets/sass/blog.scss'
+                        '<%= paths.swagAssets %>/css/blog.css': '<%= paths.swagAssets %>/sass/blog.scss'
                     },
                     options: {
                         style: 'expanded',
@@ -261,7 +154,7 @@ var path           = require('path'),
 
             shell: {
                 bourbon: {
-                    command: 'bourbon install --path <%= paths.adminAssets %>/sass/modules/'
+                    command: 'bourbon install --path <%= paths.swagAssets %>/sass/modules/'
                 }
             },
 
@@ -270,99 +163,15 @@ var path           = require('path'),
                     options: {
                         namespace: 'JST',
                         processName: function (filename) {
-                            filename = filename.replace('core/client/tpl/', '');
+                            filename = filename.replace('views/', '');
                             return filename.replace('.hbs', '');
                         }
-                    },
-                    files: {
-                        'core/client/tpl/hbs-tpl.js': 'core/client/tpl/**/*.hbs'
                     }
                 }
             },
-
-            groc: {
-                docs: {
-                    options: {
-                        'out': './docs/',
-                        'glob': [
-                            'README.md',
-                            'config.example.js',
-                            'index.js',
-                            'core/*.js',
-                            'core/server/**/*.js',
-                            'core/shared/**/*.js',
-                            'core/client/**/*.js'
-                        ],
-                        'except': [
-                            '!core/**/vendor/**/*.js',
-                            '!core/client/tpl/**/*.js'
-                        ]
-                    }
-                }
-            },
-
             clean: {
                 build: {
                     src: ['<%= paths.buildBuild %>/**']
-                }
-            },
-
-            copy: {
-                nightly: {
-                    files: [{
-                        expand: true,
-                        src: buildGlob,
-                        dest: '<%= paths.nightlyBuild %>/<%= pkg.version %>/'
-                    }]
-                },
-                weekly: {
-                    files: [{
-                        expand: true,
-                        src: buildGlob,
-                        dest: '<%= paths.weeklyBuild %>/<%= pkg.version %>/'
-                    }]
-                },
-                build: {
-                    files: [{
-                        expand: true,
-                        src: buildGlob,
-                        dest: '<%= paths.buildBuild %>/'
-                    }]
-                }
-            },
-
-            compress: {
-                nightly: {
-                    options: {
-                        archive: '<%= paths.nightlyDist %>/Ghost-Nightly-<%= pkg.version %>.zip'
-                    },
-                    expand: true,
-                    cwd: '<%= paths.nightlyBuild %>/<%= pkg.version %>/',
-                    src: ['**']
-                },
-                weekly: {
-                    options: {
-                        archive: '<%= paths.weeklyDist %>/Ghost-Weekly-<%= pkg.version %>.zip'
-                    },
-                    expand: true,
-                    cwd: '<%= paths.weeklyBuild %>/<%= pkg.version %>/',
-                    src: ['**']
-                },
-                build: {
-                    options: {
-                        archive: '<%= paths.buildDist %>/Ghost-Build.zip'
-                    },
-                    expand: true,
-                    cwd: '<%= paths.buildBuild %>/',
-                    src: ['**']
-                },
-                release: {
-                    options: {
-                        archive: '<%= paths.releaseDist %>/Ghost-<%= pkg.version %>.zip'
-                    },
-                    expand: true,
-                    cwd: '<%= paths.buildBuild %>/',
-                    src: ['**']
                 }
             },
 
@@ -373,138 +182,10 @@ var path           = require('path'),
                     tagMessage: '<%= buildType %> Release %VERSION%',
                     pushTo: 'origin build'
                 }
-            },
-
-            concat: {
-                dev: {
-                    files: {
-                        'core/built/scripts/vendor.js': [
-                            'core/shared/vendor/jquery/jquery.js',
-                            'core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js',
-                            'core/client/assets/lib/jquery-utils.js',
-                            'core/client/assets/lib/uploader.js',
-                            'core/shared/vendor/underscore.js',
-                            'core/shared/vendor/backbone/backbone.js',
-                            'core/shared/vendor/handlebars/handlebars-runtime.js',
-                            'core/shared/vendor/moment.js',
-
-                            'core/client/assets/vendor/icheck/jquery.icheck.min.js',
-
-                            'core/shared/vendor/jquery/jquery.ui.widget.js',
-                            'core/shared/vendor/jquery/jquery.iframe-transport.js',
-                            'core/shared/vendor/jquery/jquery.fileupload.js',
-
-                            'core/client/assets/vendor/codemirror/codemirror.js',
-                            'core/client/assets/vendor/codemirror/addon/mode/overlay.js',
-                            'core/client/assets/vendor/codemirror/mode/markdown/markdown.js',
-                            'core/client/assets/vendor/codemirror/mode/gfm/gfm.js',
-                            'core/client/assets/vendor/showdown/showdown.js',
-                            'core/client/assets/vendor/showdown/extensions/ghostdown.js',
-                            'core/shared/vendor/showdown/extensions/github.js',
-                            'core/client/assets/vendor/shortcuts.js',
-                            'core/client/assets/vendor/validator-client.js',
-                            'core/client/assets/vendor/countable.js',
-                            'core/client/assets/vendor/to-title-case.js',
-                            'core/client/assets/vendor/packery.pkgd.min.js',
-                            'core/client/assets/vendor/fastclick.js'
-                        ],
-
-                        'core/built/scripts/helpers.js': [
-                            'core/client/init.js',
-
-                            'core/client/mobile-interactions.js',
-                            'core/client/toggle.js',
-                            'core/client/markdown-actions.js',
-                            'core/client/helpers/index.js'
-                        ],
-
-                        'core/built/scripts/templates.js': [
-                            'core/client/tpl/hbs-tpl.js'
-                        ],
-
-                        'core/built/scripts/models.js': [
-                            'core/client/models/**/*.js'
-                        ],
-
-                        'core/built/scripts/views.js': [
-                            'core/client/views/**/*.js',
-                            'core/client/router.js'
-                        ]
-                    }
-                },
-                prod: {
-                    files: {
-                        'core/built/scripts/ghost.js': [
-                            'core/shared/vendor/jquery/jquery.js',
-                            'core/shared/vendor/jquery/jquery-ui-1.10.3.custom.min.js',
-                            'core/client/assets/lib/jquery-utils.js',
-                            'core/client/assets/lib/uploader.js',
-                            'core/shared/vendor/underscore.js',
-                            'core/shared/vendor/backbone/backbone.js',
-                            'core/shared/vendor/handlebars/handlebars-runtime.js',
-                            'core/shared/vendor/moment.js',
-
-                            'core/client/assets/vendor/icheck/jquery.icheck.min.js',
-
-                            'core/shared/vendor/jquery/jquery.ui.widget.js',
-                            'core/shared/vendor/jquery/jquery.iframe-transport.js',
-                            'core/shared/vendor/jquery/jquery.fileupload.js',
-
-                            'core/client/assets/vendor/codemirror/codemirror.js',
-                            'core/client/assets/vendor/codemirror/addon/mode/overlay.js',
-                            'core/client/assets/vendor/codemirror/mode/markdown/markdown.js',
-                            'core/client/assets/vendor/codemirror/mode/gfm/gfm.js',
-                            'core/client/assets/vendor/showdown/showdown.js',
-                            'core/client/assets/vendor/showdown/extensions/ghostdown.js',
-                            'core/shared/vendor/showdown/extensions/github.js',
-                            'core/client/assets/vendor/shortcuts.js',
-                            'core/client/assets/vendor/validator-client.js',
-                            'core/client/assets/vendor/countable.js',
-                            'core/client/assets/vendor/to-title-case.js',
-                            'core/client/assets/vendor/packery.pkgd.min.js',
-                            'core/client/assets/vendor/fastclick.js',
-
-                            'core/client/init.js',
-
-                            'core/client/mobile-interactions.js',
-                            'core/client/toggle.js',
-                            'core/client/markdown-actions.js',
-                            'core/client/helpers/index.js',
-
-                            'core/client/tpl/hbs-tpl.js',
-
-                            'core/client/models/**/*.js',
-
-                            'core/client/views/**/*.js',
-
-                            'core/client/router.js'
-                        ]
-                    }
-                }
-            },
-
-            uglify: {
-                prod: {
-                    files: {
-                        'core/built/scripts/ghost.min.js': 'core/built/scripts/ghost.js'
-                    }
-                }
             }
         };
 
         grunt.initConfig(cfg);
-
-        grunt.registerTask('setTestEnv', function () {
-            // Use 'testing' Ghost config; unless we are running on travis (then show queries for debugging)
-            process.env.NODE_ENV = process.env.TRAVIS ? 'travis' : 'testing';
-        });
-
-        grunt.registerTask('loadConfig', function () {
-            var done = this.async();
-            configLoader.loadConfig().then(function () {
-                done();
-            });
-        });
 
         // Update the package information after changes
         grunt.registerTask('updateCurrentPackageInfo', function () {
@@ -515,34 +196,6 @@ var path           = require('path'),
             cfg.buildType = type;
         });
 
-        grunt.registerTask('spawn-casperjs', function () {
-            var done = this.async(),
-                options = ['host', 'noPort', 'port', 'email', 'password'],
-                args = ['test', 'admin/', 'frontend/', '--includes=base.js', '--direct', '--log-level=debug', '--port=2369'];
-
-            // Forward parameters from grunt to casperjs
-            _.each(options, function processOption(option) {
-                if (grunt.option(option)) {
-                    args.push('--' + option + '=' + grunt.option(option));
-                }
-            });
-
-            grunt.util.spawn({
-                cmd: 'casperjs',
-                args: args,
-                opts: {
-                    cwd: path.resolve('core/test/functional'),
-                    stdio: 'inherit'
-                }
-            }, function (error, result, code) {
-                if (error) {
-                    grunt.fail.fatal(result.stdout);
-                }
-                grunt.log.writeln(result.stdout);
-                done();
-            });
-        });
-
         /* Generate Changelog
          * - Pulls changelog from git, excluding merges.
          * - Uses first line of commit message. Includes committer name.
@@ -550,12 +203,10 @@ var path           = require('path'),
         grunt.registerTask("changelog", "Generate changelog from Git", function () {
             // TODO: Break the contents of this task out into a separate module,
             // put on npm. (@cgiffard)
-
             var done = this.async();
 
             function git(args, callback, depth) {
                 depth = depth || 0;
-
                 if (!depth) {
                     grunt.log.writeln('git ' + args.join(' '));
                 }
@@ -564,9 +215,7 @@ var path           = require('path'),
                 spawn('git', args, {
                     // We can reasonably assume the gruntfile will be in the root of the repo.
                     cwd : __dirname,
-
                     stdio : ['ignore', 'pipe', process.stderr]
-
                 }).on('exit', function (code) {
 
                     // Process exited correctly but we got no output.
@@ -787,70 +436,26 @@ var path           = require('path'),
             });
         });
 
-        /* Nightly builds
-         * - Do our standard build steps (sass, handlebars, etc)
-         * - Bump patch version in package.json, commit, tag and push
-         * - Generate changelog for the past 14 releases
-         * - Copy files to build-folder/#/#{version} directory
-         * - Clean out unnecessary files (travis, .git*, .af*, .groc*)
-         * - Zip files in build folder to dist-folder/#{version} directory
-         */
-        grunt.registerTask("nightly", [
-            'setCurrentBuildType:Nightly',
-            'shell:bourbon',
-            'sass:admin',
-            'handlebars',
-            'concat',
-            'uglify',
-            'bump:build',
-            'updateCurrentPackageInfo',
-            'changelog',
-            'copy:nightly',
-            'compress:nightly'
-        ]);
-
-        grunt.registerTask("weekly", [
-            'setCurrentBuildType:Weekly',
-            'shell:bourbon',
-            'sass:admin',
-            'handlebars',
-            'concat',
-            'uglify',
-            'bump:build',
-            'updateCurrentPackageInfo',
-            'changelog',
-            'copy:weekly',
-            'compress:weekly'
-        ]);
-
         grunt.registerTask('build', [
             'shell:bourbon',
-            'sass:admin',
+            'sass:dist',
             'handlebars',
-            'concat',
-            'uglify',
             'changelog',
-            'clean:build',
-            'copy:build',
-            'compress:build'
+            'clean:build'
         ]);
 
         grunt.registerTask('release', [
             'shell:bourbon',
-            'sass:admin',
+            'sass:dist',
             'handlebars',
-            'concat',
-            'uglify',
             'changelog',
             'clean:build',
-            'copy:build',
-            'compress:release'
         ]);
 
         // Dev Mode; watch files and restart server on changes
         grunt.registerTask('dev', [
             'default',
-            'express:dev',
+            'express',
             'watch'
         ]);
 
@@ -858,24 +463,11 @@ var path           = require('path'),
         // TODO: Git submodule init/update (https://github.com/jaubourg/grunt-update-submodules)?
         grunt.registerTask('init', ['shell:bourbon', 'default']);
 
-        // Run unit tests
-        grunt.registerTask('test-unit', ['setTestEnv', 'loadConfig', 'mochacli:all']);
-
-        // Run casperjs tests only
-        grunt.registerTask('test-functional', ['setTestEnv', 'express:test', 'spawn-casperjs']);
-
         // Run tests and lint code
-        grunt.registerTask('validate', ['jslint', 'test-unit', 'test-functional']);
-
-        // Generate Docs
-        grunt.registerTask('docs', ['groc']);
-
-        // TODO: Production build task that minifies with uglify:prod
-
-        grunt.registerTask('prod', ['sass:admin', 'handlebars', 'concat', 'uglify']);
+        grunt.registerTask('validate', ['jslint']);
 
         // When you just say 'grunt'
-        grunt.registerTask('default', ['sass:admin', 'handlebars', 'concat']);
+        grunt.registerTask('default', ['sass:dist', 'handlebars']);
     };
 
 //    myGrunts = function(grunt){
